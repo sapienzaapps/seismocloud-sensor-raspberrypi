@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -34,12 +35,15 @@ func (cfg *configImpl) NewConfigReceived(sigma float32) {
 
 func (cfg *configImpl) RemoteReboot() {
 	log.Info("Reboot")
-	exec.Command("reboot")
+	exec.Command("reboot").Start()
 	os.Exit(0)
 }
 
 func (cfg *configImpl) UpdateCallback(hostname string, path string) {
-	// TODO: implement self-update
+	err := updateStage1(fmt.Sprintf("http://%s/%s", hostname, path))
+	if err != nil {
+		log.Error(err.Error())
+	}
 }
 
 func (cfg *configImpl) Save() error {

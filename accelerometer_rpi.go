@@ -9,6 +9,7 @@ import (
 )
 
 // https://www.sparkfun.com/datasheets/Sensors/Accelerometer/ADXL345.pdf
+// https://github.com/hybridgroup/gobot/blob/635adea96f788ab19bf77470b075f8db44d34fa0/drivers/i2c/adxl345_driver.go
 
 const (
 	I2C_ADDR_HIGH = 0x53
