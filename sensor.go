@@ -31,6 +31,8 @@ func sensor() {
 	// Connect to MQTT
 	log.Info("Connecting to MQTT Server", MQTT_SERVER)
 	scs, err = scsclient.NewClientV1(scsclient.ClientV1Options{
+		Model:          MODEL,
+		Version:        VERSION,
 		ClientId:       cfg.GetDeviceId(),
 		Server:         MQTT_SERVER,
 		DeviceId:       cfg.GetDeviceId(),
@@ -41,6 +43,9 @@ func sensor() {
 		RebootCallback: cfg.RemoteReboot,
 		UpdateCallback: cfg.UpdateCallback,
 	})
+	if err != nil {
+		panic(err)
+	}
 	scs.SetSkipTLS(SKIP_TLS)
 	for {
 		err = scs.Connect()
