@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/accelero"
 	"time"
 )
 
 func rawLogMain(absolute bool) {
-	a, err := CreateNewADXL345Accelerometer()
+	a, err := accelero.NewADXL345Accelerometer()
 	if err != nil {
 		panic(err)
 	}

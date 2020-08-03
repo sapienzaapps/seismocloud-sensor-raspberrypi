@@ -2,24 +2,13 @@ package main
 
 import (
 	"bytes"
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/config"
 	"net"
 )
 
 const (
 	PKTTYPE_DISCOVERY       = 1
 	PKTTYPE_DISCOVERY_REPLY = 2
-	PKYTYPE_PING            = 3
-	PKYTYPE_PONG            = 4
-	PKTTYPE_START           = 5
-	PKTTYPE_STOP            = 6
-	PKTTYPE_SENDGPS         = 7
-	PKTTYPE_OK              = 8
-	PKTTYPE_SETSYSLOG       = 9
-	PKTTYPE_REBOOT          = 10
-	PKTTYPE_GETINFO         = 11
-	PKTTYPE_GETINFO_REPLY   = 12
-	PKTTYPE_RESET           = 13
-	PKTTYPE_TRACE           = 14
 )
 
 var lanInterfaceStop chan interface{} = nil
@@ -38,7 +27,7 @@ func lanInterfaceWorker(deviceId string) {
 
 	go func() {
 		<-lanInterfaceStop
-		conn.Close()
+		_ = conn.Close()
 	}()
 
 	var buf [1024]byte
@@ -57,10 +46,11 @@ func lanInterfaceWorker(deviceId string) {
 				copy(newbuf, "INGV\000")
 				newbuf[5] = PKTTYPE_DISCOVERY_REPLY
 				copy(newbuf[6:], deviceId)
-				copy(newbuf[6+6:], VERSION)
-				copy(newbuf[6+6+4:], MODEL[:minint(8, len(MODEL))])
+				copy(newbuf[6+6:], config.VERSION)
+				copy(newbuf[6+6+4:], config.MODEL[:minint(8, len(config.MODEL))])
 
-				conn.WriteToUDP(newbuf, remote)
+				_, err := conn.WriteToUDP(newbuf, remote)
+				log.Error("can't write to UDP socket (discovery reply): ", err)
 			}
 		}
 	}

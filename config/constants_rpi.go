@@ -1,6 +1,6 @@
 // +build rpi
 
-package main
+package config
 
 const (
 	CONFIG_PATH     = "/etc/seismoconfig.json"

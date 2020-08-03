@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/config"
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/leds"
+	"git.sapienzaapps.it/seismocloud/seismocloud-client-go/scsclient"
 	"github.com/op/go-logging"
-	"github.com/sapienzaapps/seismocloud-client-go"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,15 +14,20 @@ import (
 )
 
 var log = logging.MustGetLogger("sensor")
-var cfg Config
-var leds LEDs
-var scs scsclient.ClientV1
+var cfg config.Config
+var ledset leds.LEDSet
+var scs scsclient.Client
 
 func main() {
+	// TODO: force this only in platforms where LED access is root-only
+	// TODO: document a way to grant permissions to runtime user
 	if os.Geteuid() != 0 {
-		fmt.Fprintln(os.Stderr, "Run as root")
+		_, _ = fmt.Fprintln(os.Stderr, "Run as root")
 		os.Exit(2)
 	}
+
+	ledset = leds.New()
+
 	showDeviceId := flag.Bool("showdeviceid", false, "Show the device ID and exit")
 	testLanDiscovery := flag.Bool("testlandiscovery", false, "Boot only the LAN discovery handler")
 	rawLog := flag.Bool("rawlog", false, "Dump raw Accelerometer data")
@@ -38,9 +45,12 @@ func main() {
 	}
 
 	if *showDeviceId {
-		cfg := NewConfig()
-		fmt.Println(cfg.GetDeviceId())
-		return
+		cfg, err := config.New()
+		if err != nil {
+			fmt.Println("error: ", err)
+		} else {
+			fmt.Println(cfg.GetDeviceId())
+		}
 	} else if *testLanDiscovery {
 		fmt.Println("Starting LAN discovery")
 		StartLANInterface("test")
@@ -53,13 +63,13 @@ func main() {
 	} else if *rawLog {
 		rawLogMain(*rawLogAbsolute)
 	} else if *ledTest {
-		leds, err := NewLEDs()
+		err := ledset.Init()
 		if err != nil {
 			panic(err)
 		}
-		leds.StartLoading()
+		ledset.StartLoading()
 		time.Sleep(10 * time.Second)
-		leds.StopLoading()
+		ledset.StopLoading()
 	} else {
 		sensor()
 	}

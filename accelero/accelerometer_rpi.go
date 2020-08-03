@@ -1,4 +1,4 @@
-package main
+package accelero
 
 import (
 	"encoding/binary"
@@ -83,7 +83,7 @@ type ADXL345Accelerometer struct {
 	dev i2c.Dev
 }
 
-func CreateNewADXL345Accelerometer() (Accelerometer, error) {
+func NewADXL345Accelerometer() (Accelerometer, error) {
 	if _, err := host.Init(); err != nil {
 		return nil, err
 	}

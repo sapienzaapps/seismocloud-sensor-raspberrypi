@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/kardianos/osext"
 	"io"
 	"net/http"
 	"os"
@@ -22,7 +21,7 @@ func updateStage1(url string) error {
 		return err
 	}
 
-	procname, err := osext.Executable()
+	procname, err := os.Executable()
 	if err != nil {
 		return err
 	}

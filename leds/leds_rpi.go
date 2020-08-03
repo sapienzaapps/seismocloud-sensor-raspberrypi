@@ -1,6 +1,6 @@
 // +build rpi
 
-package main
+package leds
 
 import (
 	"io/ioutil"
@@ -35,11 +35,10 @@ func isRPiRev1() bool {
 	return strings.HasSuffix(model, "Rev 1")
 }
 
-func NewLEDs() (LEDs, error) {
+func (l *LEDImpl) Init() error {
 	if _, err := host.Init(); err != nil {
-		return nil, err
+		return err
 	}
-	l := LEDImpl{}
 
 	l.green = gpioreg.ByName(GPIO0)
 	l.yellow = gpioreg.ByName(GPIO1)
@@ -50,32 +49,45 @@ func NewLEDs() (LEDs, error) {
 	}
 	l.loadingchan = nil
 
-	return &l, nil
+	return nil
 }
 
-func (l *LEDImpl) Green(s bool) {
-	l.green.Out(gpio.Level(s))
+func (l *LEDImpl) Green(s bool) error {
+	return l.green.Out(gpio.Level(s))
 }
 
-func (l *LEDImpl) Yellow(s bool) {
-	l.yellow.Out(gpio.Level(s))
+func (l *LEDImpl) Yellow(s bool) error {
+	return l.yellow.Out(gpio.Level(s))
 }
 
-func (l *LEDImpl) Red(s bool) {
-	l.red.Out(gpio.Level(s))
+func (l *LEDImpl) Red(s bool) error {
+	return l.red.Out(gpio.Level(s))
 }
 
-func (l *LEDImpl) StartupBlink() {
+func (l *LEDImpl) StartupBlink() error {
+	var err error
 	for i := 0; i < 10; i++ {
-		l.green.Out(gpio.High)
-		l.yellow.Out(gpio.High)
-		l.red.Out(gpio.High)
+		err = l.green.Out(gpio.High)
+		if err != nil {
+			return err
+		}
+		err = l.yellow.Out(gpio.High)
+		if err != nil {
+			return err
+		}
+		err = l.red.Out(gpio.High)
+		if err != nil {
+			return err
+		}
 		time.Sleep(20 * time.Millisecond)
-		l.green.Out(gpio.Low)
-		l.yellow.Out(gpio.Low)
-		l.red.Out(gpio.Low)
+
+		// Assume that the error was already fired in previous calls
+		_ = l.green.Out(gpio.Low)
+		_ = l.yellow.Out(gpio.Low)
+		_ = l.red.Out(gpio.Low)
 		time.Sleep(20 * time.Millisecond)
 	}
+	return nil
 }
 
 func (l *LEDImpl) StartLoading() {
@@ -92,17 +104,17 @@ func (l *LEDImpl) StartLoading() {
 			default:
 				fallthrough
 			case 0:
-				l.green.Out(gpio.High)
-				l.yellow.Out(gpio.Low)
-				l.red.Out(gpio.Low)
+				_ = l.green.Out(gpio.High)
+				_ = l.yellow.Out(gpio.Low)
+				_ = l.red.Out(gpio.Low)
 			case 1:
-				l.green.Out(gpio.Low)
-				l.yellow.Out(gpio.High)
-				l.red.Out(gpio.Low)
+				_ = l.green.Out(gpio.Low)
+				_ = l.yellow.Out(gpio.High)
+				_ = l.red.Out(gpio.Low)
 			case 2:
-				l.green.Out(gpio.Low)
-				l.yellow.Out(gpio.Low)
-				l.red.Out(gpio.High)
+				_ = l.green.Out(gpio.Low)
+				_ = l.yellow.Out(gpio.Low)
+				_ = l.red.Out(gpio.High)
 			}
 
 			select {

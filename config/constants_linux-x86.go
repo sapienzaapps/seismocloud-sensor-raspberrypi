@@ -1,6 +1,6 @@
-// +build linuxx86
+// +build !rpi
 
-package main
+package config
 
 const (
 	CONFIG_PATH     = "/tmp/seismoconfig.json"

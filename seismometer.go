@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/accelero"
 	"time"
 )
 
@@ -18,7 +19,7 @@ type Detection struct {
 }
 
 func CreateNewSeismometer(sigma float64) (Seismometer, error) {
-	s, e := CreateNewADXL345Accelerometer()
+	s, e := accelero.NewADXL345Accelerometer()
 	if e != nil {
 		return nil, e
 	}
@@ -56,7 +57,7 @@ func CreateNewSeismometer(sigma float64) (Seismometer, error) {
 }
 
 type SeismometerImpl struct {
-	accelerometer  Accelerometer
+	accelerometer  accelero.Accelerometer
 	runningAVG     RunningAvgFloat64
 	quakeThreshold float64
 	sigma          float64
@@ -106,7 +107,7 @@ func (s *SeismometerImpl) seismometer() {
 		s.quakeThreshold = s.runningAVG.GetAverage() + (s.runningAVG.GetStandardDeviation() * s.sigma)
 
 		if s.inEvent && time.Now().Unix()-s.lastEventWas >= 5 {
-			leds.Red(false)
+			_ = ledset.Red(false)
 			s.inEvent = false
 		} else if s.inEvent && time.Now().Unix()-s.lastEventWas < 5 {
 			continue
@@ -116,12 +117,12 @@ func (s *SeismometerImpl) seismometer() {
 			log.Debugf("New Event: v:%f - thr:%f - iter:%f - avg:%f - stddev:%f", record.Acceleration, s.quakeThreshold,
 				s.sigma, detectionAVG, detectionStdDev)
 
-			leds.Red(true)
+			_ = ledset.Red(true)
 
 			s.inEvent = true
 			s.lastEventWas = time.Now().Unix()
 
-			scs.Quake()
+			scs.Quake(time.Now(), probe.X, probe.Y, probe.Z)
 		}
 
 		<-t.C

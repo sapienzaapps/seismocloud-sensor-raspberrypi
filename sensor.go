@@ -1,7 +1,8 @@
 package main
 
 import (
-	"github.com/sapienzaapps/seismocloud-client-go"
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/config"
+	"git.sapienzaapps.it/seismocloud/seismocloud-client-go/scsclient"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,47 +17,55 @@ func sensor() {
 	log.Info("Logging started")
 
 	// Init LEDS
-	leds, err = NewLEDs()
+	err = ledset.Init()
 	if err != nil {
 		log.Error(err.Error())
 		os.Exit(-1)
 	}
-	leds.StartLoading()
+	ledset.StartLoading()
 
 	// Load config if exists
 	log.Info("Loading config")
-	cfg = NewConfig()
+	cfg, err = config.New()
+	if err != nil {
+		log.Error("error loading configuration: ", err)
+		os.Exit(-3)
+	}
 	log.Info("Device Id:", cfg.GetDeviceId(), "Sigma:", cfg.GetSigma())
 
-	// Connect to MQTT
-	log.Info("Connecting to MQTT Server", MQTT_SERVER)
-	scs, err = scsclient.NewClientV1(scsclient.ClientV1Options{
-		Model:          MODEL,
-		Version:        VERSION,
-		ClientId:       cfg.GetDeviceId(),
-		Server:         MQTT_SERVER,
-		DeviceId:       cfg.GetDeviceId(),
-		User:           "embedded",
-		Pass:           "embedded",
-		Logger:         log,
-		ConfigCallback: cfg.NewConfigReceived,
-		RebootCallback: cfg.RemoteReboot,
-		UpdateCallback: cfg.UpdateCallback,
+	// TODO: check for updates
+
+	// Setup client
+	log.Info("Connecting to MQTT Server", config.MQTT_SERVER)
+	scs, err = scsclient.New(scsclient.ClientOptions{
+		DeviceId:          cfg.GetDeviceId(),
+		Model:             config.MODEL,
+		Version:           config.VERSION,
+		OnNewSigma:        onNewSigma,
+		OnReboot:          onReboot,
+		OnStreamCommand:   nil,
+		OnProbeSpeedSet:   nil,
+		OnTimeReceived:    onTimeReceived,
+		SeismoCloudBroker: config.MQTT_SERVER,
+		Username:          "embedded",
+		Password:          "embedded",
 	})
 	if err != nil {
 		panic(err)
 	}
-	scs.SetSkipTLS(SKIP_TLS)
+
+	// Try to connect indefinitely
 	for {
 		err = scs.Connect()
 		if err != nil {
-			leds.StopLoading()
-			leds.Yellow(true)
+			// Connect error - retry in 10s if not interrupted
+			ledset.StopLoading()
+			_ = ledset.Yellow(true)
 
 			log.Error(err.Error())
 			select {
 			case <-sigs:
-				os.Exit(-2)
+				os.Exit(0)
 			default:
 				time.Sleep(10 * time.Second)
 			}
@@ -64,24 +73,17 @@ func sensor() {
 			break
 		}
 	}
-	leds.StartLoading()
+
+	// Connect OK
+	ledset.StartLoading()
+
+	// NTP sync
+	checkTime()
+	servertimeLastCheck := time.Now()
 
 	// Start local broadcaster
 	log.Info("Starting LAN interface")
 	StartLANInterface(cfg.GetDeviceId())
-
-	// NTP sync
-	servertime := scs.GetTime()
-	if servertime.Unix()-time.Now().Unix() > 2 {
-		log.Error("Local time is not synchronized")
-		StopLANInterface()
-		scs.Disconnect()
-		leds.Green(false)
-		leds.Yellow(true)
-		leds.Red(true)
-		os.Exit(-1)
-	}
-	servertimeLastCheck := *servertime
 
 	// Init seismometer
 	log.Info("Init Seismometer")
@@ -89,11 +91,10 @@ func sensor() {
 	if err != nil {
 		panic(err)
 	}
-	cfg.RegisterSigmaCallback(seismometer.SetSigma)
 
-	leds.StopLoading()
-	leds.StartupBlink()
-	leds.Green(true)
+	ledset.StopLoading()
+	_ = ledset.StartupBlink()
+	_ = ledset.Green(true)
 	log.Info("Ready")
 
 	seismometer.StartSeismometer()
@@ -102,9 +103,9 @@ func sensor() {
 	for running {
 		// Check internet every X minutes
 		if !scs.IsConnected() {
-			leds.Green(false)
-			leds.Yellow(true)
-			leds.Red(false)
+			_ = ledset.Green(false)
+			_ = ledset.Yellow(true)
+			_ = ledset.Red(false)
 
 			for {
 				err = scs.Connect()
@@ -120,23 +121,14 @@ func sensor() {
 					break
 				}
 			}
-			leds.Green(true)
-			leds.Yellow(false)
-			leds.Red(false)
+			_ = ledset.Green(true)
+			_ = ledset.Yellow(false)
+			_ = ledset.Red(false)
 		}
 
 		// Check server time
 		if time.Now().Sub(servertimeLastCheck).Hours() >= 24 {
-			servertime := scs.GetTime()
-			if servertime.Unix()-time.Now().Unix() > 2 {
-				log.Error("Local time is not synchronized")
-				StopLANInterface()
-				scs.Disconnect()
-				leds.Green(false)
-				leds.Yellow(true)
-				leds.Red(true)
-				os.Exit(-1)
-			}
+			checkTime()
 			servertimeLastCheck = time.Now()
 		}
 
