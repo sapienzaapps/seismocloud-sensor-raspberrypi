@@ -1,5 +1,7 @@
 git.sapienzaapps.it/seismocloud/seismocloud-client-go v0.0.0-20200625170835-397c1dd4fb6e h1:zF+swJv2iltM//CYJpxANRI4mLJ3vQ8nFzhZbSvKxYA=
 git.sapienzaapps.it/seismocloud/seismocloud-client-go v0.0.0-20200625170835-397c1dd4fb6e/go.mod h1:vobqMydOuT5HxDPSR4X1ok5xwkbyRr5m8QMYzOKWWrA=
+git.sapienzaapps.it/seismocloud/seismocloud-client-go v0.0.0-20200803190717-28fe08c52888 h1:Xw6drf+t0KruEclzw6tOTflOz4VUo1/MgbINsnB7w/s=
+git.sapienzaapps.it/seismocloud/seismocloud-client-go v0.0.0-20200803190717-28fe08c52888/go.mod h1:vobqMydOuT5HxDPSR4X1ok5xwkbyRr5m8QMYzOKWWrA=
 github.com/eclipse/paho.mqtt.golang v1.2.0 h1:1F8mhG9+aO5/xpdtFkW4SxOJB67ukuDC3t2y2qayIX0=
 github.com/eclipse/paho.mqtt.golang v1.2.0/go.mod h1:H9keYFcgq3Qr5OUJm/JZI/i6U7joQ8SYLhZwfeOo6Ts=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
