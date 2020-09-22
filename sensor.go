@@ -1,15 +1,16 @@
 package main
 
 import (
-	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/config"
-	"git.sapienzaapps.it/seismocloud/seismocloud-client-go/scsclient"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/config"
+	"git.sapienzaapps.it/seismocloud/seismocloud-client-go/scsclient"
 )
 
-func sensor() {
+func sensor() int {
 	var err error
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT)
@@ -19,8 +20,8 @@ func sensor() {
 	// Init LEDS
 	err = ledset.Init()
 	if err != nil {
-		log.Error(err.Error())
-		os.Exit(-1)
+		log.Error("error initializing LEDs: ", err)
+		return -1
 	}
 	ledset.StartLoading()
 
@@ -29,43 +30,59 @@ func sensor() {
 	cfg, err = config.New()
 	if err != nil {
 		log.Error("error loading configuration: ", err)
-		os.Exit(-3)
+		return -3
 	}
-	log.Info("Device Id:", cfg.GetDeviceId(), "Sigma:", cfg.GetSigma())
+	log.Info("Device Id:", cfg.GetDeviceID(), "Sigma:", cfg.GetSigma())
 
 	// TODO: check for updates
 
+	// Init seismometer
+	log.Info("Init Seismometer")
+	seismometer, err := CreateNewSeismometer(cfg.GetSigma())
+	if err != nil {
+		log.Error("error initializing the seismometer: ", err)
+		return -5
+	}
+
 	// Setup client
-	log.Info("Connecting to MQTT Server", config.MQTT_SERVER)
+	log.Info("Connecting to MQTT Server", config.MqttServer)
 	scs, err = scsclient.New(scsclient.ClientOptions{
-		DeviceId:          cfg.GetDeviceId(),
-		Model:             config.MODEL,
-		Version:           config.VERSION,
-		OnNewSigma:        onNewSigma,
+		DeviceId:          cfg.GetDeviceID(),
+		Model:             config.Model,
+		Version:           config.Version,
+		OnNewSigma:        onNewSigmaFunc(seismometer),
 		OnReboot:          onReboot,
 		OnStreamCommand:   nil,
 		OnProbeSpeedSet:   nil,
 		OnTimeReceived:    onTimeReceived,
-		SeismoCloudBroker: config.MQTT_SERVER,
+		SeismoCloudBroker: config.MqttServer,
 		Username:          "embedded",
 		Password:          "embedded",
 	})
 	if err != nil {
-		panic(err)
+		log.Error("error creating the seismocloud client: ", err)
+		return -4
 	}
+	defer func() {
+		err := scs.Close()
+		if err != nil {
+			log.Error("error closing the connection to seismocloud network: ", err)
+		}
+	}()
 
 	// Try to connect indefinitely
 	for {
 		err = scs.Connect()
 		if err != nil {
+			log.Error("connection error: ", err)
+
 			// Connect error - retry in 10s if not interrupted
 			ledset.StopLoading()
 			_ = ledset.Yellow(true)
 
-			log.Error(err.Error())
 			select {
 			case <-sigs:
-				os.Exit(0)
+				return 0
 			default:
 				time.Sleep(10 * time.Second)
 			}
@@ -78,19 +95,17 @@ func sensor() {
 	ledset.StartLoading()
 
 	// NTP sync
+	log.Info("Synchronizing time")
 	checkTime()
 	servertimeLastCheck := time.Now()
 
 	// Start local broadcaster
 	log.Info("Starting LAN interface")
-	StartLANInterface(cfg.GetDeviceId())
-
-	// Init seismometer
-	log.Info("Init Seismometer")
-	seismometer, err := CreateNewSeismometer(cfg.GetSigma())
-	if err != nil {
-		panic(err)
-	}
+	StartLANInterface(cfg.GetDeviceID())
+	defer func() {
+		log.Info("Stopping LAN interface")
+		StopLANInterface()
+	}()
 
 	ledset.StopLoading()
 	_ = ledset.StartupBlink()
@@ -98,6 +113,9 @@ func sensor() {
 	log.Info("Ready")
 
 	seismometer.StartSeismometer()
+	defer func() {
+		seismometer.StopSeismometer()
+	}()
 
 	running := true
 	for running {
@@ -110,10 +128,10 @@ func sensor() {
 			for {
 				err = scs.Connect()
 				if err != nil {
-					log.Error(err.Error())
+					log.Error("connection error: ", err)
 					select {
 					case <-sigs:
-						os.Exit(-2)
+						return 0
 					default:
 						time.Sleep(10 * time.Second)
 					}
@@ -139,11 +157,5 @@ func sensor() {
 		case <-time.After(1 * time.Second):
 		}
 	}
-
-	seismometer.StopSeismometer()
-
-	log.Info("Stopping LAN interface")
-	StopLANInterface()
-
-	log.Info("End")
+	return 0
 }

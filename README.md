@@ -10,7 +10,7 @@
 * [ ] Add support for sensor data stream
 * [ ] Add support for set probe speed command
 * [ ] Add support for statistics publish (WiFI SSID, RSSI, etc)
-* [ ] Implement new threshold algorithm (see NodeMCU code)
+* [X] Implement new threshold algorithm (see NodeMCU code)
 * [ ] Handle errors
-* [ ] Make the sensor/seismometer (platform-agnostic) similar to the NodeMCU/Android one (e.g. rename variables,
+* [X] Make the sensor/seismometer (platform-agnostic) similar to the NodeMCU/Android one (e.g. rename variables,
 refactor control flow, etc)

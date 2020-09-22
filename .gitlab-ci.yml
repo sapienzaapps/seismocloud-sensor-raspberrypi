@@ -1,0 +1,23 @@
+stages:
+  - codecheck
+
+codecheck:
+  tags:
+    - golang
+  stage: codecheck
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "devel"'
+    - if: $CI_MERGE_REQUEST_ID
+    - when: never
+  before_script:
+    - go get github.com/securego/gosec/cmd/gosec
+    - go get honnef.co/go/tools/cmd/staticcheck
+    - go get github.com/gordonklaus/ineffassign
+    - go get github.com/kisielk/errcheck
+  script:
+    - go test -v ./...
+    - go vet ./...
+    - gosec ./...
+    - staticcheck ./...
+    - ineffassign .
+    - errcheck ./...

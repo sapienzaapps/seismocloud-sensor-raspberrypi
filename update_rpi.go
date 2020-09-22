@@ -7,16 +7,11 @@ import (
 	"syscall"
 )
 
-func updateStage1(url string) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	// TODO: check directory writable
-	// TODO: check executability in directory (ie. if FS is mounted with noexec or SELinux is blocking something)
-	// TODO: check if the executable itself is writable
+func update(url string) error {
+	// TODO: check directory writable (as we need to delete and re-create the executable)
+	// TODO: write the new executable in the same directory as the current one
 
-	err = download(url, wd+string(os.PathSeparator)+"seismosensor-new")
+	err := download(url, "/tmp/seismosensor-new")
 	if err != nil {
 		return err
 	}
@@ -26,37 +21,30 @@ func updateStage1(url string) error {
 		return err
 	}
 
-	args := []string{"seismosensor-new", "-stage2update", procname}
-	env := os.Environ()
-	return syscall.Exec(wd+string(os.PathSeparator)+"seismosensor-new", args, env)
+	err = os.Remove(procname)
+	if err != nil {
+		return err
+	}
+
+	// Warning, here the executable is vanished, we need to place the new one here immediately
+
+	err = os.Rename("/tmp/seismosensor-new", procname)
+	if err != nil {
+		// OOOPS! This is a very big issue: the old executable is gone
+		return err
+	}
+
+	return reboot()
 }
 
-func updateStage2(filename string) error {
-	err := os.Remove(filename)
+func reboot() error {
+	procname, err := os.Executable()
 	if err != nil {
 		return err
 	}
-
-	out, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	in, err := os.Open(filename)
-	if err != nil {
-		return err
-	}
-
-	_, err = io.Copy(out, in)
-	if err != nil {
-		return err
-	}
-
-	in.Close()
-	out.Close()
-
-	args := []string{filename}
+	args := []string{procname}
 	env := os.Environ()
-	return syscall.Exec(filename, args, env)
+	return syscall.Exec(procname, args, env) // #nosec G204
 }
 
 func download(url string, saveTo string) error {
@@ -65,7 +53,7 @@ func download(url string, saveTo string) error {
 		return err
 	}
 
-	resp, err := http.Get(url)
+	resp, err := http.Get(url) // #nosec G107
 	if err != nil {
 		return err
 	}
@@ -74,7 +62,7 @@ func download(url string, saveTo string) error {
 		return err
 	}
 
-	resp.Body.Close()
-	out.Close()
+	_ = resp.Body.Close()
+	_ = out.Close()
 	return nil
 }

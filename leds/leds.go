@@ -1,5 +1,6 @@
 package leds
 
+// LEDSet represent an interface for leds
 type LEDSet interface {
 	Init() error
 
@@ -11,6 +12,7 @@ type LEDSet interface {
 	Red(bool) error
 }
 
+// New creates a new instance of LEDSet
 func New() LEDSet {
-	return &LEDImpl{}
+	return &ledImpl{}
 }

@@ -2,31 +2,39 @@
 
 package leds
 
-func (l *LEDImpl) Init() error {
+import "fmt"
+
+func (l *ledImpl) Init() error {
 	return nil
 }
 
-type LEDImpl struct {
+type ledImpl struct {
 }
 
-func (l *LEDImpl) Green(s bool) error {
+func (l *ledImpl) Green(s bool) error {
+	fmt.Printf("[G] %v\n", s)
 	return nil
 }
 
-func (l *LEDImpl) Yellow(s bool) error {
+func (l *ledImpl) Yellow(s bool) error {
+	fmt.Printf("[Y] %v\n", s)
 	return nil
 }
 
-func (l *LEDImpl) Red(s bool) error {
+func (l *ledImpl) Red(s bool) error {
+	fmt.Printf("[R] %v\n", s)
 	return nil
 }
 
-func (l *LEDImpl) StartupBlink() error {
+func (l *ledImpl) StartupBlink() error {
+	fmt.Println("LED Startup blink")
 	return nil
 }
 
-func (l *LEDImpl) StartLoading() {
+func (l *ledImpl) StartLoading() {
+	fmt.Println("LED start loading")
 }
 
-func (l *LEDImpl) StopLoading() {
+func (l *ledImpl) StopLoading() {
+	fmt.Println("LED stop loading")
 }

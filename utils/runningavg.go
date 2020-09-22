@@ -1,7 +1,8 @@
-package main
+package utils
 
 import "math"
 
+// RunningAvgFloat64 describe a running average type
 type RunningAvgFloat64 interface {
 	AddValue(float64) float64
 	GetAverage() float64
@@ -10,6 +11,7 @@ type RunningAvgFloat64 interface {
 	Elements() uint64
 }
 
+// NewRunningAvgFloat64 create a new running average instance
 func NewRunningAvgFloat64() RunningAvgFloat64 {
 	return &runningAvgFloat64impl{}
 }
@@ -21,7 +23,7 @@ type runningAvgFloat64impl struct {
 }
 
 func (r *runningAvgFloat64impl) AddValue(value float64) float64 {
-	r.n += 1
+	r.n++
 	delta := value - r.avg
 	r.avg += delta / float64(r.n)
 	r.variance = r.variance + delta*(value-r.avg)

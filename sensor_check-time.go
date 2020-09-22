@@ -1,10 +1,12 @@
 package main
 
 import (
-	"git.sapienzaapps.it/seismocloud/seismocloud-client-go/scsclient"
-	"git.sapienzaapps.it/seismocloud/seismocloud-client-go/scsutils"
 	"os"
 	"time"
+
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/utils"
+	"git.sapienzaapps.it/seismocloud/seismocloud-client-go/scsclient"
+	"git.sapienzaapps.it/seismocloud/seismocloud-client-go/scsutils"
 )
 
 var timeSync = make(chan time.Time, 1)
@@ -23,7 +25,7 @@ func checkTime() {
 		} else {
 			select {
 			case serverTime := <-timeSync:
-				if AbsI64(serverTime.Unix()-time.Now().Unix()) > 2 {
+				if utils.AbsI64(serverTime.Unix()-time.Now().Unix()) > 2 {
 					log.Error("Local time is not synchronized")
 					_ = scs.Close()
 					_ = ledset.Green(false)

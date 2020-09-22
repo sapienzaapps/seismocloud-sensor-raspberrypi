@@ -1,11 +1,10 @@
 package main
 
 import (
-	"bytes"
-	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/config"
-	"net"
+	uuid "github.com/satori/go.uuid"
 )
 
+/*
 const (
 	PKTTYPE_DISCOVERY       = 1
 	PKTTYPE_DISCOVERY_REPLY = 2
@@ -55,14 +54,17 @@ func lanInterfaceWorker(deviceId string) {
 		}
 	}
 }
+*/
 
-func StartLANInterface(deviceid string) {
-	if lanInterfaceStop == nil {
+// StartLANInterface launches the local discovery process
+func StartLANInterface(deviceid uuid.UUID) {
+	/*if lanInterfaceStop == nil {
 		lanInterfaceStop = make(chan interface{}, 1)
 		go lanInterfaceWorker(deviceid)
-	}
+	}*/
 }
 
+// StopLANInterface stops the local discovery process
 func StopLANInterface() {
-	lanInterfaceStop <- 1
+	//lanInterfaceStop <- 1
 }

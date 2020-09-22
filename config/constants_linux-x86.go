@@ -3,7 +3,12 @@
 package config
 
 const (
-	CONFIG_PATH     = "/tmp/seismoconfig.json"
-	CONFIG_PATH_OLD = "/tmp/seismoconfig.txt"
-	MODEL           = "linux-x86"
+	// ConfigPath is the configuration file path
+	ConfigPath = "/tmp/seismoconfig.json"
+
+	// ConfigPathLegacy is the legacy configuration file path
+	ConfigPathLegacy = "/tmp/seismoconfig.txt"
+
+	// Model is the model tag
+	Model = "linux-x86"
 )
