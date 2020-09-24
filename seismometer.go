@@ -78,12 +78,14 @@ func (s *seismometerImpl) seismometer() {
 		return
 	}
 
+	log.Debug("Calibrating accelerometer")
 	s.accelerometer.Calibration()
 	defer func() {
 		_ = s.accelerometer.Stop()
 		_ = s.accelerometer.Shutdown()
 	}()
 
+	log.Debug("Pre-fill threshold")
 	// Pre-fill the threshold
 	err = s.preFill()
 	if err != nil {
@@ -91,6 +93,7 @@ func (s *seismometerImpl) seismometer() {
 		return
 	}
 
+	log.Debug("Starting probe")
 	lastThresholdUpdate := time.Now()
 	lastQuake := time.Unix(0, 0)
 	// TODO: adjust with the speed limit from MQTT
@@ -114,6 +117,7 @@ func (s *seismometerImpl) seismometer() {
 				probeValue, s.quakeThreshold, s.sigma, s.lastCMA.GetAverage(), s.lastCMA.GetStandardDeviation())
 
 			_ = ledset.Red(true)
+			lastQuake = time.Now()
 
 			err = scs.Quake(time.Now(), probe.X, probe.Y, probe.Z)
 			if err != nil {
