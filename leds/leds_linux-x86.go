@@ -9,20 +9,32 @@ func (l *ledImpl) Init() error {
 }
 
 type ledImpl struct {
+	red    bool
+	yellow bool
+	green  bool
 }
 
 func (l *ledImpl) Green(s bool) error {
-	fmt.Printf("[G] %v\n", s)
+	if l.green != s {
+		l.green = s
+		fmt.Printf("[G] %v\n", s)
+	}
 	return nil
 }
 
 func (l *ledImpl) Yellow(s bool) error {
-	fmt.Printf("[Y] %v\n", s)
+	if l.yellow != s {
+		l.yellow = s
+		fmt.Printf("[Y] %v\n", s)
+	}
 	return nil
 }
 
 func (l *ledImpl) Red(s bool) error {
-	fmt.Printf("[R] %v\n", s)
+	if l.red != s {
+		l.red = s
+		fmt.Printf("[R] %v\n", s)
+	}
 	return nil
 }
 

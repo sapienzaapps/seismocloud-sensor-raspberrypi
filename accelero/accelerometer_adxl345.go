@@ -1,4 +1,4 @@
-// +build rpi
+// +build adxl345
 
 package accelero
 
@@ -204,8 +204,8 @@ func (a *adxl345Accelerometer) Calibration() {
 	}
 
 	a.normX = avgX.GetAverage()
-	a.normY = avgX.GetAverage()
-	a.normZ = avgX.GetAverage()
+	a.normY = avgY.GetAverage()
+	a.normZ = avgZ.GetAverage()
 }
 
 func (a *adxl345Accelerometer) Stop() error {

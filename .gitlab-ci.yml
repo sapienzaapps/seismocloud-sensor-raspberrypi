@@ -15,6 +15,9 @@ codecheck:
     - go get github.com/gordonklaus/ineffassign
     - go get github.com/kisielk/errcheck
   script:
+    - wget https://www.phidgets.com/downloads/phidget22/libraries/linux/libphidget22.tar.gz -O libphidget22.tar.gz
+    - tar xvf libphidget22.tar.gz
+    - cd libphidget22-1.6.20200921 && ./configure && make && make install && cd .. # this is going to fail
     - go test -v ./...
     - go vet ./...
     - gosec ./...

@@ -1,13 +1,16 @@
-.PHONY: clean raspi raspi-debug all
+.PHONY: clean raspi raspi-prod all phi test
 
 seismosensor: *.go
 	go build -o seismosensor
 
-raspi:
-	GOARCH=arm GOARM=6 go build -tags rpi -o seismosensor
+raspi-prod:
+	GOARCH=arm GOARM=6 go build -tags "rpi adxl345 prod" -o seismosensor
 
-raspi-debug:
-	GOARCH=arm GOARM=6 go build -tags "rpi debug" -o seismosensor
+raspi:
+	GOARCH=arm GOARM=6 go build -tags "rpi adxl345" -o seismosensor
+
+phi:
+	go build -tags "phidget" -o seismosensor
 
 clean:
 	rm -f seismosensor

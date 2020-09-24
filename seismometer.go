@@ -37,6 +37,7 @@ func CreateNewSeismometer(sigma float64) (Seismometer, error) {
 		accelerometer:  s,
 		sigma:          sigma,
 		lastCMA:        utils.NewRunningAvgFloat64(),
+		partialCMA:     utils.NewRunningAvgFloat64(),
 	}, nil
 }
 
@@ -56,31 +57,44 @@ func (s *seismometerImpl) rotateThreshold() {
 	s.quakeThreshold = s.lastCMA.GetAverage() + (s.lastCMA.GetStandardDeviation() * s.sigma)
 }
 
-func (s *seismometerImpl) preFill() {
+func (s *seismometerImpl) preFill() error {
 	oneSecondMs := time.Now()
 	for time.Since(oneSecondMs) < time.Second {
 		probe, err := s.accelerometer.ProbeValue()
 		if err != nil {
-			// TODO: log and terminate gracefully
-			panic(err)
+			return err
 		}
 		s.partialCMA.AddValue(probe.GetTotalVector())
 	}
 	s.rotateThreshold()
+	return nil
 }
 
 func (s *seismometerImpl) seismometer() {
-	// TODO: adjust with the speed limit from MQTT
-	t := time.NewTicker(50 * time.Millisecond)
+	log.Debugf("Starting accelerometer %s", s.accelerometer.GetAccelerometerName())
+	err := s.accelerometer.Start()
+	if err != nil {
+		log.Error("error starting the accelerometer: ", err)
+		return
+	}
 
-	s.accelerometer.Start()
 	s.accelerometer.Calibration()
+	defer func() {
+		_ = s.accelerometer.Stop()
+		_ = s.accelerometer.Shutdown()
+	}()
 
 	// Pre-fill the threshold
-	s.preFill()
+	err = s.preFill()
+	if err != nil {
+		log.Error("error reading accelerometer values: ", err)
+		return
+	}
 
 	lastThresholdUpdate := time.Now()
 	lastQuake := time.Unix(0, 0)
+	// TODO: adjust with the speed limit from MQTT
+	t := time.NewTicker(50 * time.Millisecond)
 	for s.active {
 		if time.Since(lastThresholdUpdate) > 15*time.Minute {
 			s.rotateThreshold()
@@ -89,8 +103,8 @@ func (s *seismometerImpl) seismometer() {
 
 		probe, err := s.accelerometer.ProbeValue()
 		if err != nil {
-			// TODO: log and terminate gracefully
-			panic(err)
+			log.Error("error reading accelerometer values: ", err)
+			break
 		}
 
 		inQuake := time.Since(lastQuake) < 5*time.Second
@@ -101,7 +115,10 @@ func (s *seismometerImpl) seismometer() {
 
 			_ = ledset.Red(true)
 
-			scs.Quake(time.Now(), probe.X, probe.Y, probe.Z)
+			err = scs.Quake(time.Now(), probe.X, probe.Y, probe.Z)
+			if err != nil {
+				log.Warning("error sending quake signal: ", err)
+			}
 			// QUAKE
 		} else if !inQuake {
 			_ = ledset.Red(false)
@@ -115,7 +132,6 @@ func (s *seismometerImpl) seismometer() {
 		<-t.C
 	}
 	t.Stop()
-	s.accelerometer.Stop()
 }
 
 func (s *seismometerImpl) StopSeismometer() {

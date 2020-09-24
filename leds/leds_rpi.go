@@ -4,11 +4,12 @@ package leds
 
 import (
 	"io/ioutil"
+	"strings"
+	"time"
+
 	"periph.io/x/periph/conn/gpio"
 	"periph.io/x/periph/conn/gpio/gpioreg"
 	"periph.io/x/periph/host"
-	"strings"
-	"time"
 )
 
 const (
@@ -18,7 +19,7 @@ const (
 	GPIO2_REV2 = "27" // Red (revision 2+)
 )
 
-type LEDImpl struct {
+type ledImpl struct {
 	green  gpio.PinIO
 	yellow gpio.PinIO
 	red    gpio.PinIO
@@ -35,7 +36,7 @@ func isRPiRev1() bool {
 	return strings.HasSuffix(model, "Rev 1")
 }
 
-func (l *LEDImpl) Init() error {
+func (l *ledImpl) Init() error {
 	if _, err := host.Init(); err != nil {
 		return err
 	}
@@ -52,19 +53,19 @@ func (l *LEDImpl) Init() error {
 	return nil
 }
 
-func (l *LEDImpl) Green(s bool) error {
+func (l *ledImpl) Green(s bool) error {
 	return l.green.Out(gpio.Level(s))
 }
 
-func (l *LEDImpl) Yellow(s bool) error {
+func (l *ledImpl) Yellow(s bool) error {
 	return l.yellow.Out(gpio.Level(s))
 }
 
-func (l *LEDImpl) Red(s bool) error {
+func (l *ledImpl) Red(s bool) error {
 	return l.red.Out(gpio.Level(s))
 }
 
-func (l *LEDImpl) StartupBlink() error {
+func (l *ledImpl) StartupBlink() error {
 	var err error
 	for i := 0; i < 10; i++ {
 		err = l.green.Out(gpio.High)
@@ -90,7 +91,7 @@ func (l *LEDImpl) StartupBlink() error {
 	return nil
 }
 
-func (l *LEDImpl) StartLoading() {
+func (l *ledImpl) StartLoading() {
 	if l.loadingchan != nil {
 		return
 	}
@@ -128,6 +129,6 @@ func (l *LEDImpl) StartLoading() {
 	}()
 }
 
-func (l *LEDImpl) StopLoading() {
+func (l *ledImpl) StopLoading() {
 	l.loadingchan <- 1
 }

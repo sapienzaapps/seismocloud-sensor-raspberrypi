@@ -1,11 +1,11 @@
-// +build !rpi
+// +build !adxl345,!phidget
 
 package accelero
 
 type dummyAccelerometer struct {
 }
 
-// New creates a new instance of accelerometer for ADXL type sensors
+// New creates a new instance of a dummy accelerometer
 func New() (Accelerometer, error) {
 	return &dummyAccelerometer{}, nil
 }

@@ -34,7 +34,11 @@ func sensor() int {
 	}
 	log.Info("Device Id:", cfg.GetDeviceID(), "Sigma:", cfg.GetSigma())
 
-	// TODO: check for updates
+	// Check for updates
+	err = checkUpdate()
+	if err != nil {
+		log.Warning("Error checking updates: ", err)
+	}
 
 	// Init seismometer
 	log.Info("Init Seismometer")
@@ -47,7 +51,7 @@ func sensor() int {
 	// Setup client
 	log.Info("Connecting to MQTT Server", config.MqttServer)
 	scs, err = scsclient.New(scsclient.ClientOptions{
-		DeviceId:          cfg.GetDeviceID(),
+		DeviceID:          cfg.GetDeviceID(),
 		Model:             config.Model,
 		Version:           config.Version,
 		OnNewSigma:        onNewSigmaFunc(seismometer),
@@ -64,6 +68,7 @@ func sensor() int {
 		return -4
 	}
 	defer func() {
+		log.Info("Closing connection with SeismoCloud network")
 		err := scs.Close()
 		if err != nil {
 			log.Error("error closing the connection to seismocloud network: ", err)
@@ -82,9 +87,9 @@ func sensor() int {
 
 			select {
 			case <-sigs:
+				log.Warning("signal received, stopping")
 				return 0
-			default:
-				time.Sleep(10 * time.Second)
+			case <-time.After(10 * time.Second):
 			}
 		} else {
 			break
@@ -114,6 +119,7 @@ func sensor() int {
 
 	seismometer.StartSeismometer()
 	defer func() {
+		log.Info("Stopping seismometer")
 		seismometer.StopSeismometer()
 	}()
 
@@ -131,9 +137,9 @@ func sensor() int {
 					log.Error("connection error: ", err)
 					select {
 					case <-sigs:
+						log.Warning("signal received, stopping")
 						return 0
-					default:
-						time.Sleep(10 * time.Second)
+					case <-time.After(10 * time.Second):
 					}
 				} else {
 					break
@@ -145,7 +151,7 @@ func sensor() int {
 		}
 
 		// Check server time
-		if time.Now().Sub(servertimeLastCheck).Hours() >= 24 {
+		if time.Since(servertimeLastCheck).Hours() >= 24 {
 			checkTime()
 			servertimeLastCheck = time.Now()
 		}

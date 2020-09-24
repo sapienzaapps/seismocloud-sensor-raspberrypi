@@ -1,4 +1,4 @@
-//+build prod
+// +build prod
 
 package config
 
@@ -8,4 +8,7 @@ const (
 
 	// MqttServer is the server for signaling
 	MqttServer = "tls://mqtts.seismocloud.com:443"
+
+	// FirmwareServer is the base URL for firmware server
+	FirmwareServer = "https://api.seismocloud.com"
 )

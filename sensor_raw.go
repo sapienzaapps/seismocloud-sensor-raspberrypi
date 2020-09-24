@@ -39,7 +39,7 @@ func rawLogMain(absolute bool) {
 			panic(err)
 		}
 
-		fmt.Printf("%f\t%f\t%f\n", probe.X, probe.Y, probe.Z)
+		fmt.Printf("%f\t%f\t%f\t%f\n", probe.X, probe.Y, probe.Z, probe.GetTotalVector())
 
 		select {
 		case <-sigs:

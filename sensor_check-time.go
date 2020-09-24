@@ -20,6 +20,7 @@ func checkTime() {
 	for {
 		err := scs.RequestTime()
 		if err != nil {
+			// TODO: better logging and error handling
 			log.Error(err.Error())
 			os.Exit(-1)
 		} else {
@@ -32,13 +33,14 @@ func checkTime() {
 					_ = ledset.Yellow(true)
 					_ = ledset.Red(true)
 					time.Sleep(10 * time.Second)
+					// TODO: better logging and error handling
 					os.Exit(-1)
 				}
 				return
-			default:
+			case <-time.After(10 * time.Second):
+				// TODO: do not block for signals
 				// Timeout, retrying
 				log.Warning("timeout syncing time, retrying in 10s")
-				time.Sleep(10 * time.Second)
 			}
 		}
 	}
