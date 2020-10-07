@@ -1,7 +1,7 @@
 package main
 
 import (
-	"git.sapienzaapps.it/seismocloud/seismocloud-client-go/scsclient"
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-client-go/scsclient"
 )
 
 // TODO: close all (seismometer, MQTT connection, etc) gracefully
