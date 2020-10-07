@@ -8,6 +8,7 @@ codecheck:
   image: golang:1.15
   rules:
     - if: '$CI_COMMIT_BRANCH == "devel"'
+    - if: '$CI_COMMIT_BRANCH == "test-ci"'
     - if: $CI_MERGE_REQUEST_ID
     - when: never
   before_script:
