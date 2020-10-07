@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import progressbar
+import math
 
 
 def runningavg(serie):
@@ -13,7 +14,11 @@ def runningavg(serie):
 		delta = x - avg
 		avg += delta / float(n)
 		variance = variance + delta*(x-avg)
-	return avg, variance
+	if n == 0:
+		return 0, 0
+	elif n == 1:
+		return avg, 0
+	return avg, math.sqrt(variance / float(n-1))
 
 
 print("Ingesting data")
@@ -23,6 +28,7 @@ Z = []
 Vect = []
 OldThreshold = []
 NewThresholdValue = 0
+NewThresholdVar = 0
 NewThreshold = []
 fp = open(sys.argv[1], "r")
 rows = fp.read().split("\n")
@@ -41,8 +47,8 @@ with progressbar.ProgressBar(max_value=len(rows)) as pbar:
 		OldThreshold.append(avg + variance*6)
 
 		if len(Vect) > 2000 and NewThresholdValue == 0:
-			NewThresholdValue, variance = runningavg(Vect)
-			NewThresholdValue += variance*6
+			NewThresholdValue, NewThresholdVar = runningavg(Vect)
+			NewThresholdValue += NewThresholdVar*6
 			NewThreshold.append(NewThresholdValue)
 		elif NewThresholdValue != 0:
 			NewThreshold.append(NewThresholdValue)
@@ -52,6 +58,8 @@ with progressbar.ProgressBar(max_value=len(rows)) as pbar:
 		pbar.update(pbar.value + 1)
 
 timespan = range(0, len(X))
+
+print(runningavg(Vect))
 
 print("Drawing")
 #plt.plot(timespan, X, label="X")

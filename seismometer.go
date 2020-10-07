@@ -54,17 +54,19 @@ func (s *seismometerImpl) SetSigma(sigma float64) {
 func (s *seismometerImpl) rotateThreshold() {
 	s.lastCMA = s.partialCMA
 	s.partialCMA = utils.NewRunningAvgFloat64()
-	s.quakeThreshold = s.lastCMA.GetAverage() + (s.lastCMA.GetVariance() * s.sigma)
+	s.quakeThreshold = s.lastCMA.GetAverage() + (s.lastCMA.GetStandardDeviation() * s.sigma)
 }
 
 func (s *seismometerImpl) preFill() error {
 	oneSecondMs := time.Now()
+	t := time.NewTicker(50 * time.Millisecond)
 	for time.Since(oneSecondMs) < 40*time.Second {
 		probe, err := s.accelerometer.ProbeValue()
 		if err != nil {
 			return err
 		}
 		s.partialCMA.AddValue(probe.GetTotalVector())
+		<-t.C
 	}
 	s.rotateThreshold()
 	return nil

@@ -23,3 +23,13 @@ apt-get install libusb-1.0-0-dev
 ```
 
 Then download the [libphidget22](https://www.phidgets.com/downloads/phidget22/libraries/linux/libphidget22.tar.gz) file. Compile it.
+
+## Build locally
+
+```sh
+# To use a docker container as builder passing the SSH daemon, launch it like:
+docker run -it --rm -v $(pwd)/:/src/ --volume ${SSH_AUTH_SOCK}:/ssh-agent --env SSH_AUTH_SOCK=/ssh-agent golang:1.15
+
+# Then force SSH connections inside the container for git:
+git config --global url."git@git.sapienzaapps.it:".insteadOf https://git.sapienzaapps.it/
+```

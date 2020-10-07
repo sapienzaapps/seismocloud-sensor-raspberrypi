@@ -4,3 +4,4 @@ seismocloud-sensor-raspberrypi
 /tmp/
 log.txt
 /venv/
+/libphidget22.so.0

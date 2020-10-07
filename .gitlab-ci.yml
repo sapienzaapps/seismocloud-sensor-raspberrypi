@@ -3,21 +3,24 @@ stages:
 
 codecheck:
   tags:
-    - golang
+    - docker
   stage: codecheck
+  image: golang:1.15
   rules:
     - if: '$CI_COMMIT_BRANCH == "devel"'
     - if: $CI_MERGE_REQUEST_ID
     - when: never
   before_script:
+    - echo -e "machine git.sapienzaapps.it\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
+    - apt-get update && apt-get install -y libusb-1.0.0-dev
     - go get github.com/securego/gosec/cmd/gosec
     - go get honnef.co/go/tools/cmd/staticcheck
     - go get github.com/gordonklaus/ineffassign
     - go get github.com/kisielk/errcheck
-  script:
     - wget https://www.phidgets.com/downloads/phidget22/libraries/linux/libphidget22.tar.gz -O libphidget22.tar.gz
     - tar xvf libphidget22.tar.gz
-    - cd libphidget22-1.6.20200921 && ./configure && make && make install && cd .. # this is going to fail
+    - cd libphidget22-1.6.20200921 && ./configure && make && make install && cd ..
+  script:
     - go test -v ./...
     - go vet ./...
     - gosec ./...
