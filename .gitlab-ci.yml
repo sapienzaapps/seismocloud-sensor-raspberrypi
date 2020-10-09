@@ -12,6 +12,7 @@ codecheck:
     - when: never
   before_script:
     - echo -e "machine git.sapienzaapps.it\nlogin gitlab-ci-token\npassword ${CI_JOB_TOKEN}" > ~/.netrc
+    - go env -w GOPRIVATE=git.sapienzaapps.it
     - apt-get update && apt-get install -y libusb-1.0.0-dev
     - go get github.com/securego/gosec/cmd/gosec
     - go get honnef.co/go/tools/cmd/staticcheck
