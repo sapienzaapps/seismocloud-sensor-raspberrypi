@@ -21,13 +21,6 @@ var ledset leds.LEDSet = leds.New()
 var scs scsclient.Client
 
 func main() {
-	// TODO: force this only in platforms where LED/sensors access is root-only
-	// TODO: document a way to grant permissions to runtime user
-	/*if os.Geteuid() != 0 {
-		_, _ = fmt.Fprintln(os.Stderr, "Run as root")
-		os.Exit(2)
-	}*/
-
 	showDeviceID := flag.Bool("showdeviceid", false, "Show the device ID and exit")
 	testLanDiscovery := flag.Bool("testlandiscovery", false, "Boot only the LAN discovery handler")
 	rawLog := flag.Bool("rawlog", false, "Dump raw Accelerometer data")

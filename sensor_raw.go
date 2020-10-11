@@ -26,6 +26,8 @@ func rawLogMain(absolute bool) {
 	a.Calibration()
 	t := time.NewTicker(50 * time.Millisecond)
 
+	fmt.Println("UNIX Time\tX\tY\tZ\tTotal vector")
+
 	running := true
 	for running {
 		var probe accelero.AccelerometerData
@@ -39,7 +41,7 @@ func rawLogMain(absolute bool) {
 			panic(err)
 		}
 
-		fmt.Printf("%f\t%f\t%f\t%f\n", probe.X, probe.Y, probe.Z, probe.GetTotalVector())
+		fmt.Printf("%0.3f\t%f\t%f\t%f\t%f\n", float64(time.Now().UnixNano())/float64(time.Second), probe.X, probe.Y, probe.Z, probe.GetTotalVector())
 
 		select {
 		case <-sigs:

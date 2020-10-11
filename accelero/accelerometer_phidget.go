@@ -18,6 +18,13 @@ type phidgetAccelerometer struct {
 
 // New creates a new instance of a dummy accelerometer
 func New() (Accelerometer, error) {
+
+	// TODO: check if this permission is always needed, or there is a way to grant permissions over the sensor
+	// (it should exists)
+	if os.Geteuid() != 0 {
+		return nil, errors.New("Can't access to sensor as non-root user")
+	}
+
 	accelero := phidgets.PhidgetAccelerometer{}
 	accelero.Create()
 

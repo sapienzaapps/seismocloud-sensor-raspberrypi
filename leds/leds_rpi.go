@@ -37,6 +37,12 @@ func isRPiRev1() bool {
 }
 
 func (l *ledImpl) Init() error {
+	// TODO: check if this permission is always needed, or there is a way to grant permissions over the GPIO
+	// (it should exists)
+	if os.Geteuid() != 0 {
+		return errors.New("Can't access to GPIO as non-root user")
+	}
+
 	if _, err := host.Init(); err != nil {
 		return err
 	}
