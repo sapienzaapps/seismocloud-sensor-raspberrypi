@@ -6,8 +6,8 @@ import (
 	"syscall"
 	"time"
 
-	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/config"
 	"git.sapienzaapps.it/SeismoCloud/seismocloud-client-go/scsclient"
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/config"
 )
 
 func sensor() int {

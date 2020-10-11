@@ -4,9 +4,9 @@ import (
 	"os"
 	"time"
 
-	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/utils"
 	"git.sapienzaapps.it/SeismoCloud/seismocloud-client-go/scsclient"
 	"git.sapienzaapps.it/SeismoCloud/seismocloud-client-go/scsutils"
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/utils"
 )
 
 var timeSync = make(chan time.Time, 1)

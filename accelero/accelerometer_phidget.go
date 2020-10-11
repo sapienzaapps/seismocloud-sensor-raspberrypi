@@ -3,6 +3,8 @@
 package accelero
 
 import (
+	"errors"
+	"os"
 	"time"
 
 	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/utils"

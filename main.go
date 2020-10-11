@@ -8,9 +8,9 @@ import (
 	"syscall"
 	"time"
 
+	"git.sapienzaapps.it/SeismoCloud/seismocloud-client-go/scsclient"
 	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/config"
 	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/leds"
-	"git.sapienzaapps.it/SeismoCloud/seismocloud-client-go/scsclient"
 	"github.com/op/go-logging"
 	uuid "github.com/satori/go.uuid"
 )
