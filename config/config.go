@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	uuid "github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 )
 
 // Interface is the interface for the configuration system
@@ -24,7 +24,11 @@ func New() (Interface, error) {
 	if err == nil {
 		err = json.Unmarshal(cfgbuf, &ret)
 	} else if os.IsNotExist(err) {
-		ret.DeviceID = uuid.NewV4()
+		deviceId, err := uuid.NewV4()
+		if err != nil {
+			return nil, err
+		}
+		ret.DeviceID = deviceId
 		ret.Sigma = 6.0
 		err = ret.Save()
 	}

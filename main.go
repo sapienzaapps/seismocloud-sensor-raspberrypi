@@ -11,8 +11,8 @@ import (
 	"git.sapienzaapps.it/SeismoCloud/seismocloud-client-go/scsclient"
 	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/config"
 	"git.sapienzaapps.it/SeismoCloud/seismocloud-sensor-raspberrypi/leds"
+	"github.com/gofrs/uuid"
 	"github.com/op/go-logging"
-	uuid "github.com/satori/go.uuid"
 )
 
 var log = logging.MustGetLogger("sensor")
